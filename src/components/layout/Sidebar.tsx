@@ -1,116 +1,151 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Users, User, Stethoscope, Calendar, 
-  FileText, MessageSquare, Settings, LayoutDashboard,
-  ClipboardList
+import {
+  HomeIcon,
+  Users,
+  Calendar,
+  FileText,
+  MessageSquare,
+  Stethoscope,
+  Settings,
+  LogOut
 } from 'lucide-react';
 
-interface SidebarLinkProps {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-  active?: boolean;
-}
-
-const SidebarLink: React.FC<SidebarLinkProps> = ({ to, label, icon, active }) => (
-  <Link 
-    to={to} 
-    className={cn(
-      "flex items-center py-3 px-4 rounded-lg transition-all hover:bg-clinic-50",
-      active ? "bg-clinic-50 text-clinic-600 font-medium" : "text-gray-600"
-    )}
-  >
-    <div className={cn(
-      "mr-3",
-      active ? "text-clinic-500" : "text-gray-500"
-    )}>
-      {icon}
-    </div>
-    <span>{label}</span>
-  </Link>
-);
-
 export function Sidebar() {
-  const { role } = useAuth();
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  // Définir les liens en fonction du rôle de l'utilisateur
-  const getLinks = () => {
+  const { role, logout } = useAuth();
+  
+  // Definir les liens de navigation en fonction du rôle
+  const getNavLinks = () => {
+    const commonLinks = [
+      {
+        name: 'Tableau de bord',
+        href: '/',
+        icon: HomeIcon
+      },
+      {
+        name: 'Messages',
+        href: '/messages',
+        icon: MessageSquare
+      }
+    ];
+    
     const adminLinks = [
-      { to: "/", label: "Tableau de bord", icon: <LayoutDashboard size={20} />, paths: ["/"] },
-      { to: "/utilisateurs", label: "Utilisateurs", icon: <Users size={20} />, paths: ["/utilisateurs"] },
-      { to: "/patients", label: "Patients", icon: <User size={20} />, paths: ["/patients", "/patients/nouveau", /^\/patients\/detail\/.*$/] },
-      { to: "/medecins", label: "Médecins", icon: <Stethoscope size={20} />, paths: ["/medecins", "/medecins/nouveau", /^\/medecins\/detail\/.*$/] },
-      { to: "/rendez-vous", label: "Rendez-vous", icon: <Calendar size={20} />, paths: ["/rendez-vous", "/rendez-vous/nouveau"] },
-      { to: "/factures", label: "Factures", icon: <FileText size={20} />, paths: ["/factures", /^\/factures\/detail\/.*$/] },
-      { to: "/messages", label: "Messages", icon: <MessageSquare size={20} />, paths: ["/messages"] },
-      { to: "/settings", label: "Paramètres", icon: <Settings size={20} />, paths: ["/settings"] },
+      {
+        name: 'Patients',
+        href: '/patients',
+        icon: Users
+      },
+      {
+        name: 'Médecins',
+        href: '/medecins',
+        icon: Stethoscope
+      },
+      {
+        name: 'Rendez-vous',
+        href: '/rendez-vous',
+        icon: Calendar
+      },
+      {
+        name: 'Factures',
+        href: '/factures',
+        icon: FileText
+      }
     ];
     
     const secretaireLinks = [
-      { to: "/", label: "Tableau de bord", icon: <LayoutDashboard size={20} />, paths: ["/"] },
-      { to: "/patients", label: "Patients", icon: <User size={20} />, paths: ["/patients", "/patients/nouveau", /^\/patients\/detail\/.*$/] },
-      { to: "/rendez-vous", label: "Rendez-vous", icon: <Calendar size={20} />, paths: ["/rendez-vous", "/rendez-vous/nouveau"] },
-      { to: "/factures", label: "Factures", icon: <FileText size={20} />, paths: ["/factures", /^\/factures\/detail\/.*$/] },
-      { to: "/messages", label: "Messages", icon: <MessageSquare size={20} />, paths: ["/messages"] },
+      {
+        name: 'Patients',
+        href: '/patients',
+        icon: Users
+      },
+      {
+        name: 'Rendez-vous',
+        href: '/rendez-vous',
+        icon: Calendar
+      },
+      {
+        name: 'Factures',
+        href: '/factures',
+        icon: FileText
+      }
     ];
     
     const patientLinks = [
-      { to: "/", label: "Tableau de bord", icon: <LayoutDashboard size={20} />, paths: ["/"] },
-      { to: "/rendez-vous", label: "Mes rendez-vous", icon: <Calendar size={20} />, paths: ["/rendez-vous"] },
-      { to: "/dossier", label: "Mon dossier médical", icon: <ClipboardList size={20} />, paths: ["/dossier"] },
-      { to: "/factures", label: "Mes factures", icon: <FileText size={20} />, paths: ["/factures", /^\/factures\/detail\/.*$/] },
-      { to: "/messages", label: "Messages", icon: <MessageSquare size={20} />, paths: ["/messages"] },
+      {
+        name: 'Rendez-vous',
+        href: '/rendez-vous',
+        icon: Calendar
+      },
+      {
+        name: 'Factures',
+        href: '/factures',
+        icon: FileText
+      }
     ];
     
     switch (role) {
-      case "admin":
-        return adminLinks;
-      case "secretaire":
-        return secretaireLinks;
-      case "patient":
-        return patientLinks;
+      case 'admin':
+        return [...commonLinks, ...adminLinks];
+      case 'secretaire':
+        return [...commonLinks, ...secretaireLinks];
+      case 'patient':
+        return [...commonLinks, ...patientLinks];
       default:
-        return [];
+        return commonLinks;
     }
   };
 
-  const links = getLinks();
-  
-  if (links.length === 0) return null;
-
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full">
-      <div className="py-6 px-4">
-        <nav>
-          <ul className="space-y-1">
-            {links.map((link, index) => {
-              // Vérifie si le chemin actuel correspond à l'un des chemins du lien
-              const isActive = link.paths.some(path => {
-                if (path instanceof RegExp) {
-                  return path.test(currentPath);
-                }
-                return path === currentPath;
-              });
-              
-              return (
-                <li key={index}>
-                  <SidebarLink 
-                    to={link.to} 
-                    label={link.label} 
-                    icon={link.icon} 
-                    active={isActive} 
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+    <div className="h-screen w-64 bg-white border-r flex flex-col">
+      <div className="p-6">
+        <h2 className="text-xl font-bold text-gray-800">Clinique Santé</h2>
+        <p className="text-xs text-gray-500">Système de gestion</p>
+      </div>
+      <nav className="flex-1 px-4 pb-4">
+        <ul className="space-y-1">
+          {getNavLinks().map((link) => (
+            <li key={link.href}>
+              <NavLink
+                to={link.href}
+                className={({ isActive }) => cn(
+                  "flex items-center px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors",
+                  isActive && "bg-clinic-50 text-clinic-900 font-medium"
+                )}
+              >
+                <link.icon className="h-5 w-5 mr-3" />
+                {link.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div className="px-4 pb-6 border-t pt-4">
+        <ul className="space-y-1">
+          <li>
+            <NavLink
+              to="/parametres"
+              className={({ isActive }) => cn(
+                "flex items-center px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors",
+                isActive && "bg-clinic-50 text-clinic-900 font-medium"
+              )}
+            >
+              <Settings className="h-5 w-5 mr-3" />
+              Paramètres
+            </NavLink>
+          </li>
+          <li>
+            <button
+              onClick={logout}
+              className="w-full flex items-center px-4 py-2 rounded-md text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              Déconnexion
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
   );

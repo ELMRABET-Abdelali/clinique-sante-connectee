@@ -10,6 +10,12 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
+import PatientDetail from "./pages/PatientDetail";
+import RendezVous from "./pages/RendezVous";
+import Factures from "./pages/Factures";
+import Medecins from "./pages/Medecins";
+import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
@@ -33,6 +39,46 @@ const App = () => (
               <Route path="/" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Patients */}
+              <Route path="/patients" element={
+                <ProtectedRoute>
+                  <Patients />
+                </ProtectedRoute>
+              } />
+              <Route path="/patients/:id" element={
+                <ProtectedRoute>
+                  <PatientDetail />
+                </ProtectedRoute>
+              } />
+              
+              {/* Rendez-vous */}
+              <Route path="/rendez-vous" element={
+                <ProtectedRoute>
+                  <RendezVous />
+                </ProtectedRoute>
+              } />
+              
+              {/* Factures */}
+              <Route path="/factures" element={
+                <ProtectedRoute>
+                  <Factures />
+                </ProtectedRoute>
+              } />
+              
+              {/* Médecins */}
+              <Route path="/medecins" element={
+                <ProtectedRoute>
+                  <Medecins />
+                </ProtectedRoute>
+              } />
+              
+              {/* Messagerie */}
+              <Route path="/messages" element={
+                <ProtectedRoute>
+                  <Messages />
                 </ProtectedRoute>
               } />
 
