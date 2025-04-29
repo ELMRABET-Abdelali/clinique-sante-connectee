@@ -32,7 +32,7 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       <div className="flex flex-1">
         {/* Desktop sidebar */}
-        <aside className="hidden md:block">
+        <aside className="hidden md:block w-64 flex-shrink-0">
           <Sidebar />
         </aside>
         
@@ -58,6 +58,7 @@ export function Layout({ children }: LayoutProps) {
           <button 
             className="block md:hidden mb-4 p-2 rounded-md hover:bg-gray-100"
             onClick={toggleMobileSidebar}
+            aria-label="Toggle sidebar"
           >
             {isMobileSidebarOpen ? (
               <X className="h-6 w-6 text-gray-600" />

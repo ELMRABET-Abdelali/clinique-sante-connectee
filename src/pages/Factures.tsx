@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Plus, Search, FileText, CreditCard, Edit, Trash2, Download, Check, X 
+  Plus, Search, FileText, Edit, Trash2, Download, Check, X 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -84,7 +83,7 @@ const Factures = () => {
     setServices(updatedServices);
   };
   
-  const handleAddFacture = () => {
+  function handleAddFacture() {
     if (!selectedPatient || !selectedMedecin || services.some(s => !s.description)) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
@@ -107,9 +106,9 @@ const Factures = () => {
     setIsAddDialogOpen(false);
     resetForm();
     toast.success("Facture créée avec succès");
-  };
+  }
   
-  const handleEditFacture = () => {
+  function handleEditFacture() {
     if (!currentFacture || !selectedPatient || !selectedMedecin || services.some(s => !s.description)) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
@@ -128,24 +127,24 @@ const Factures = () => {
     setIsEditDialogOpen(false);
     resetForm();
     toast.success("Facture mise à jour avec succès");
-  };
+  }
   
-  const handleEditClick = (facture: Facture) => {
+  function handleEditClick(facture: Facture) {
     setCurrentFacture(facture);
     setSelectedPatient(facture.patientId);
     setSelectedMedecin(facture.medecinId);
     setServices([...facture.services]);
     setIsEditDialogOpen(true);
-  };
+  }
   
-  const handleDeleteFacture = (id: string) => {
+  function handleDeleteFacture(id: string) {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette facture ? Cette action est irréversible.")) {
       deleteFacture(id);
       toast.success("Facture supprimée avec succès");
     }
-  };
+  }
   
-  const handleToggleStatus = (facture: Facture) => {
+  function handleToggleStatus(facture: Facture) {
     const newStatus = facture.statut === 'payee' ? 'non_payee' : 'payee';
     
     updateFacture(facture.id, {
@@ -153,32 +152,32 @@ const Factures = () => {
     });
     
     toast.success(`Facture marquée comme ${newStatus === 'payee' ? 'payée' : 'non payée'}`);
-  };
+  }
   
-  const handleDownloadFacture = (facture: Facture) => {
+  function handleDownloadFacture(facture: Facture) {
     // Simuler le téléchargement
     toast.success("Téléchargement de la facture démarré");
     setTimeout(() => {
       toast.info("Pour une implémentation réelle, cette fonction exporterait un PDF de la facture");
     }, 1500);
-  };
+  }
   
-  const resetForm = () => {
+  function resetForm() {
     setSelectedPatient('');
     setSelectedMedecin('');
     setServices([{ description: '', prix: 0, quantite: 1 }]);
     setCurrentFacture(null);
-  };
+  }
   
-  const getPatientName = (id: string): string => {
+  function getPatientName(id: string): string {
     const patient = patients.find(p => p.id === id);
     return patient ? `${patient.prenom} ${patient.nom}` : 'Patient inconnu';
-  };
+  }
   
-  const getMedecinName = (id: string): string => {
+  function getMedecinName(id: string): string {
     const medecin = medecins.find(m => m.id === id);
     return medecin ? `Dr. ${medecin.prenom} ${medecin.nom}` : 'Médecin inconnu';
-  };
+  }
   
   return (
     <div className="space-y-6">
