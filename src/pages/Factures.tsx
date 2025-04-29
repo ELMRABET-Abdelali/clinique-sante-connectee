@@ -68,6 +68,7 @@ const Factures = () => {
     }
   };
   
+  // Fix for TS2418 error: Ensure the value is always a string
   const handleChangeService = (index: number, field: keyof Service, value: string | number) => {
     const updatedServices = [...services];
     
@@ -77,7 +78,11 @@ const Factures = () => {
         [field]: typeof value === 'string' ? parseFloat(value) || 0 : value 
       };
     } else {
-      updatedServices[index] = { ...updatedServices[index], [field]: value };
+      // Ensure any non-numeric field is stored as string
+      updatedServices[index] = { 
+        ...updatedServices[index], 
+        [field]: String(value) 
+      };
     }
     
     setServices(updatedServices);
