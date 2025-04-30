@@ -1,0 +1,70 @@
+Create a fully functional and production-ready web-based clinic management system in PHP and MySQL. All content (UI, fields, labels, buttons, messages, etc.) must be in French.
+
+The system must include a secure authentication system with 3 roles:
+- **Administrateur**
+- **Secrétaire**
+- **Patient**
+
+Each role should have access only to the relevant features.
+
+---
+
+### Fonctionnalités principales :
+
+#### 1. Gestion des utilisateurs
+- Connexion et déconnexion sécurisées
+- Interface différente pour chaque rôle (admin, secrétaire, patient)
+- Administrateur peut ajouter/modifier/supprimer des utilisateurs (patients, médecins, secrétaires)
+- Gestion des mots de passe
+
+#### 2. Gestion des patients
+- Ajouter/modifier/supprimer un patient
+- Dossier médical de chaque patient avec historique des rendez-vous, traitements, prescriptions
+- Rechercher un patient par nom, prénom, numéro de téléphone
+
+#### 3. Gestion des médecins
+- Ajouter/modifier/supprimer un médecin
+- Affecter des patients à des médecins
+- Spécialité, disponibilité, informations de contact
+
+#### 4. Gestion des rendez-vous
+- Secrétaire peut créer, modifier ou annuler un rendez-vous
+- Planning par médecin
+- Notification au patient par email (peut être une simulation)
+- Possibilité de voir les rendez-vous du jour
+
+#### 5. Facturation / Invoices
+- Créer une facture après consultation ou traitement
+- Détails de la facture (date, patient, médecin, service, prix)
+- Télécharger ou imprimer la facture (PDF)
+- Historique des factures par patient
+- Possibilité de marquer comme payé/non payé
+
+#### 6. Tableau de bord
+- Vue globale pour l’administrateur (statistiques des patients, rendez-vous, factures)
+- Vue simplifiée pour secrétaire (rendez-vous, patients, tâches du jour)
+- Vue pour patient (rendez-vous à venir, factures, dossier médical)
+
+#### 7. Autres
+- Système de messagerie interne entre médecin et secrétaire
+- Interface simple, responsive (HTML/CSS/Bootstrap)
+- Base de données bien structurée en MySQL
+- Code sécurisé (prévention contre injections SQL, XSS, etc.)
+
+---
+
+### Contraintes techniques :
+- Backend en **PHP (procédural ou orienté objet)**
+- Base de données **MySQL**
+- Utilisation de **Bootstrap** pour le design responsive
+- Toutes les interactions doivent être **en français**
+- Application prête à être déployée sur un serveur Apache (LAMP stack)
+- Livré avec une structure claire (fichiers séparés pour la logique, la vue, la base de données)
+- Interface intuitive pour les utilisateurs non techniques
+
+---
+
+Nom du projet : **Gestion Clinique - Système Complet**
+Langue : **Français**
+Technologies : **PHP + MySQL + Bootstrap**
+
