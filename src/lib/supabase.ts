@@ -1,6 +1,69 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/integrations/supabase/types';
+
+// Define the Database type here, since we can't modify the auto-generated types file
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          nom: string;
+          prenom: string;
+          telephone: string;
+          role: string;
+          date_creation: string;
+        };
+        Insert: {
+          id: string;
+          nom: string;
+          prenom: string;
+          telephone: string;
+          role: string;
+          date_creation?: string;
+        };
+        Update: {
+          id?: string;
+          nom?: string;
+          prenom?: string;
+          telephone?: string;
+          role?: string;
+          date_creation?: string;
+        };
+      };
+      // Include other tables needed for type safety
+      patients: {
+        Row: {
+          id: string;
+          user_id: string;
+          date_naissance: string;
+          adresse: string;
+          nss: string;
+          medecin?: string;
+        };
+      };
+      medecins: {
+        Row: {
+          id: string;
+          user_id: string;
+          specialite: string;
+        };
+      };
+      rendez_vous: {
+        Row: {
+          id: string;
+          patient_id: string;
+          medecin_id: string;
+          date: string;
+          heure: string;
+          duree: number;
+          motif: string;
+          statut: string;
+        };
+      };
+    };
+  };
+};
 
 // Use the Supabase URL and anon key from the auto-generated client
 const SUPABASE_URL = "https://ijfyxxrmmeogkkaswumr.supabase.co";

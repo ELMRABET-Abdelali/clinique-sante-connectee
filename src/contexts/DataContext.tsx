@@ -120,7 +120,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // First get all users with patient role
       const { data: patientUsers, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('role', 'patient');
       
@@ -198,7 +198,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // First get all users with medecin role (we need to update the types to include this role)
       const { data: medecinUsers, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('role', 'medecin');
       
@@ -337,7 +337,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Then create user record with auth user's id
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .insert({
           id: authData.user.id,
           nom: user.nom,
@@ -370,7 +370,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUser = async (id: string, userData: Partial<User>) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update(userData)
         .eq('id', id);
       
@@ -388,7 +388,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Delete user data
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('id', id);
       
