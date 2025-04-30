@@ -38,7 +38,7 @@ export const mockUsers: User[] = [
     prenom: "Philippe",
     email: "medecin@clinique.fr",
     telephone: "0123456792",
-    role: "secretaire", // Les médecins sont gérés comme des utilisateurs avec des attributs supplémentaires
+    role: "medecin", // Corrected from 'secretaire' to 'medecin'
     dateCreation: "2023-01-05",
   }
 ];
@@ -133,7 +133,7 @@ export const mockMedecins: Medecin[] = [
     prenom: "Philippe",
     email: "medecin@clinique.fr",
     telephone: "0123456792",
-    role: "secretaire", // Pour simplifier, on utilise rôle secrétaire
+    role: "medecin", // Corrected from 'secretaire' to 'medecin' 
     dateCreation: "2023-01-05",
     specialite: "Médecine générale",
     disponibilites: [
@@ -161,7 +161,7 @@ export const mockMedecins: Medecin[] = [
     prenom: "Claire",
     email: "claire.petit@clinique.fr",
     telephone: "0234567892",
-    role: "secretaire",
+    role: "medecin", // Corrected from 'secretaire' to 'medecin'
     dateCreation: "2023-02-15",
     specialite: "Cardiologie",
     disponibilites: [
