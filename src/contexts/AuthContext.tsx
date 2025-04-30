@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, Role } from '@/types';
 import { toast } from 'sonner';
-import { mockUsers } from '@/data/mockData';
+import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -28,40 +28,111 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifier s'il y a un utilisateur dans le stockage local
-    const storedUser = localStorage.getItem('clinicUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Check if there's an active session
+    const getSession = async () => {
+      setIsLoading(true);
+      
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          throw sessionError;
+        }
+        
+        if (sessionData?.session) {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', sessionData.session.user.id)
+            .single();
+            
+          if (userError) throw userError;
+          
+          if (userData) {
+            setCurrentUser(userData as User);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        toast.error("Erreur lors de la récupération de la session");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    getSession();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+          } else if (userData) {
+            setCurrentUser(userData as User);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
+        }
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulation d'une authentification
-      const user = mockUsers.find(u => u.email === email);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
       
-      // Simuler un délai d'authentification
-      await new Promise(r => setTimeout(r, 800));
-      
-      if (user && password === 'password') { // Mot de passe fixe pour la démo
-        setCurrentUser(user);
-        localStorage.setItem('clinicUser', JSON.stringify(user));
-        toast.success(`Bienvenue, ${user.prenom} ${user.nom}`);
-      } else {
+      if (error) {
         toast.error("Email ou mot de passe incorrect");
-        throw new Error("Identifiants invalides");
+        throw error;
       }
+      
+      if (data.user) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (userError) throw userError;
+        
+        if (userData) {
+          toast.success(`Bienvenue, ${userData.prenom} ${userData.nom}`);
+          setCurrentUser(userData as User);
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error("Erreur lors de la connexion");
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('clinicUser');
-    toast.info("Vous êtes déconnecté");
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+      toast.info("Vous êtes déconnecté");
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error("Erreur lors de la déconnexion");
+    }
   };
 
   const value = {
@@ -70,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     isAuthenticated: !!currentUser,
-    role: currentUser?.role || null,
+    role: currentUser?.role as Role | null,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

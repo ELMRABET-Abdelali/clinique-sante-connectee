@@ -1,5 +1,5 @@
 
-export type Role = 'admin' | 'secretaire' | 'patient';
+export type Role = 'admin' | 'secretaire' | 'patient' | 'medecin';
 
 export interface User {
   id: string;
@@ -29,6 +29,7 @@ export interface Patient extends User {
 }
 
 export interface Medecin extends User {
+  role: 'medecin';
   specialite: string;
   disponibilites: Disponibilite[];
   patients: string[]; // IDs des patients

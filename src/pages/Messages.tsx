@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,10 +29,10 @@ const Messages = () => {
   const [messageContent, setMessageContent] = useState('');
   const [newMessageText, setNewMessageText] = useState('');
   
-  // Filtrer les utilisateurs qui peuvent être des destinataires (médecins et secrétaires)
+  // Filtrer les utilisateurs qui peuvent être des destinataires (admin, médecins et secrétaires)
   const potentialRecipients = users.filter(user => 
     user.id !== currentUser?.id && 
-    (user.role === 'admin' || user.role === 'secretaire' || user.role === 'medecin')
+    user.role !== 'patient'
   );
   
   // Organiser les messages par conversations
