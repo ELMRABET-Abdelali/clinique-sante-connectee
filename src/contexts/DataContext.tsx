@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, Patient, Medecin, RendezVous, Facture, Message, Service, Role } from '@/types';
 import { toast } from 'sonner';
@@ -91,13 +90,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*');
       
       if (error) throw error;
       
       if (data) {
-        setUsers(data as User[]);
+        // Map the database schema to our app's User type
+        const mappedUsers: User[] = data.map(profile => ({
+          id: profile.id,
+          nom: profile.nom,
+          prenom: profile.prenom,
+          email: '', // We'll need to get this from auth if needed
+          telephone: profile.telephone,
+          role: profile.role as Role,
+          dateCreation: profile.date_creation
+        }));
+        
+        setUsers(mappedUsers);
       }
     } catch (error) {
       console.error('Error fetching users:', error);

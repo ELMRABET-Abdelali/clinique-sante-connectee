@@ -1,26 +1,21 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/supabase';
+import { Database } from '@/integrations/supabase/types';
 
-// Get environment variables with more robust fallbacks
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+// Use the Supabase URL and anon key from the auto-generated client
+const SUPABASE_URL = "https://ijfyxxrmmeogkkaswumr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqZnl4eHJtbWVvZ2trYXN3dW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5NzQ4NDQsImV4cCI6MjA2MTU1MDg0NH0.n08eyzQKMZPY-zDjiTLmq-FWTMF8Xfmb9y5TyEonTqM";
 
-// Check if we're in a browser environment before showing the warning
-if (typeof window !== 'undefined') {
-  // Only show warning in development environment
-  if (import.meta.env.DEV && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)) {
-    console.warn(
-      'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. ' +
-      'The app will run with a placeholder client, but database operations will fail.'
-    );
+// Create the Supabase client with the correct types
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
   }
-}
-
-// Create the Supabase client with fallback values to prevent crashes
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+});
 
 // Helper to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
-  return !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return true; // We now have hardcoded values from the auto-generated client
 };

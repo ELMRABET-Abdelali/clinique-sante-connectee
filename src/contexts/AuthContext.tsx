@@ -1,8 +1,7 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, Role } from '@/types';
 import { toast } from 'sonner';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -27,15 +26,9 @@ export function useAuth() {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSupabaseReady, setIsSupabaseReady] = useState(isSupabaseConfigured());
+  const [isSupabaseReady, setIsSupabaseReady] = useState(true); // Always true now that we have hardcoded values
 
   useEffect(() => {
-    // If Supabase is not properly configured, don't attempt to fetch the session
-    if (!isSupabaseReady) {
-      setIsLoading(false);
-      return;
-    }
-    
     // Check if there's an active session
     const getSession = async () => {
       setIsLoading(true);
@@ -49,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (sessionData?.session) {
           const { data: userData, error: userError } = await supabase
-            .from('users')
+            .from('profiles')
             .select('*')
             .eq('id', sessionData.session.user.id)
             .single();
@@ -57,7 +50,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (userError) throw userError;
           
           if (userData) {
-            setCurrentUser(userData as User);
+            // Convert from profiles table format to our User type
+            const user: User = {
+              id: userData.id,
+              nom: userData.nom,
+              prenom: userData.prenom,
+              email: sessionData.session.user.email || '',
+              telephone: userData.telephone,
+              role: userData.role as Role,
+              dateCreation: userData.date_creation
+            };
+            setCurrentUser(user);
           }
         }
       } catch (error) {
@@ -70,41 +73,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     getSession();
     
-    // Only set up auth subscription if Supabase is configured
-    if (isSupabaseReady) {
-      // Subscribe to auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (event === 'SIGNED_IN' && session) {
-            const { data: userData, error: userError } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
               
-            if (userError) {
-              console.error('Error fetching user data:', userError);
-            } else if (userData) {
-              setCurrentUser(userData as User);
-            }
-          } else if (event === 'SIGNED_OUT') {
-            setCurrentUser(null);
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+          } else if (userData) {
+            // Convert from profiles table format to our User type
+            const user: User = {
+              id: userData.id,
+              nom: userData.nom,
+              prenom: userData.prenom,
+              email: session.user.email || '',
+              telephone: userData.telephone,
+              role: userData.role as Role,
+              dateCreation: userData.date_creation
+            };
+            setCurrentUser(user);
           }
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
         }
-      );
-      
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [isSupabaseReady]);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = async (email: string, password: string) => {
-    if (!isSupabaseReady) {
-      toast.error("La configuration Supabase est incomplète. Connexion indisponible.");
-      return;
-    }
-    
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -119,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (data.user) {
         const { data: userData, error: userError } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
           .eq('id', data.user.id)
           .single();
@@ -127,8 +132,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userError) throw userError;
         
         if (userData) {
+          // Convert from profiles table format to our User type
+          const user: User = {
+            id: userData.id,
+            nom: userData.nom,
+            prenom: userData.prenom,
+            email: data.user.email || '',
+            telephone: userData.telephone,
+            role: userData.role as Role,
+            dateCreation: userData.date_creation
+          };
+          
           toast.success(`Bienvenue, ${userData.prenom} ${userData.nom}`);
-          setCurrentUser(userData as User);
+          setCurrentUser(user);
         }
       }
     } catch (error) {
@@ -141,12 +157,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    if (!isSupabaseReady) {
-      setCurrentUser(null);
-      toast.info("Vous êtes déconnecté");
-      return;
-    }
-    
     try {
       await supabase.auth.signOut();
       setCurrentUser(null);

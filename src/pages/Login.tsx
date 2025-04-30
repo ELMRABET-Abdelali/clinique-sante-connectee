@@ -1,18 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, Lock, Mail } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { BarChart2, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const { login, isAuthenticated, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Si l'utilisateur est déjà authentifié, rediriger vers la page d'accueil
@@ -43,14 +45,22 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     
     if (!validateForm()) return;
     
     try {
       await login(email, password);
       navigate('/');
-    } catch (error) {
-      // L'erreur est déjà gérée par le context d'authentification
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      // Check for specific error messages
+      if (error.message?.includes('Email not confirmed')) {
+        setAuthError("Veuillez confirmer votre email avant de vous connecter. Vérifiez que la confirmation d'email est désactivée dans la console Supabase.");
+      } else {
+        setAuthError("Erreur de connexion. Vérifiez vos identifiants ou réessayez plus tard.");
+      }
     }
   };
 
@@ -58,6 +68,7 @@ const Login = () => {
   const demoAccounts = [
     { role: 'Administrateur', email: 'admin@clinique.fr' },
     { role: 'Secrétaire', email: 'secretaire@clinique.fr' },
+    { role: 'Médecin', email: 'medecin@clinique.fr' },
     { role: 'Patient', email: 'patient@clinique.fr' },
   ];
 
@@ -81,6 +92,14 @@ const Login = () => {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {authError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erreur</AlertTitle>
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -143,6 +162,14 @@ const Login = () => {
                 <p className="mt-2 text-xs text-gray-500">
                   Le mot de passe pour tous les comptes est: <strong>password</strong>
                 </p>
+                
+                <Alert className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Information importante</AlertTitle>
+                  <AlertDescription>
+                    Pour que la connexion fonctionne, assurez-vous que l'option "Confirm email" est désactivée dans les paramètres d'authentification de Supabase.
+                  </AlertDescription>
+                </Alert>
               </div>
             </CardContent>
             <CardFooter>
