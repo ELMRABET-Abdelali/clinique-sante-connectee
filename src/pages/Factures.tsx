@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -131,7 +130,7 @@ const Factures = () => {
       medecinId: newFacture.medecinId || '',
       services: services,
       montantTotal: newFacture.montantTotal || 0,
-      statut: 'non_payee'
+      statut: 'non_payee' as const
     };
     
     // Ajoute la nouvelle facture à la liste
@@ -145,7 +144,7 @@ const Factures = () => {
       date: new Date().toISOString().split('T')[0],
       patientId: '',
       medecinId: '',
-      statut: 'non_payee',
+      statut: 'non_payee' as const,
       services: [],
       montantTotal: 0
     });
@@ -159,7 +158,7 @@ const Factures = () => {
     // Met à jour le statut de la facture
     const updatedFactures = factures.map(facture => {
       if (facture.id === id) {
-        return { ...facture, statut: 'payee' };
+        return { ...facture, statut: 'payee' as const };
       }
       return facture;
     });
