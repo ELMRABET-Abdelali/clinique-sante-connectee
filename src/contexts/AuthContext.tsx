@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User, Role } from '@/types';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   role: Role | null;
+  isSupabaseReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,8 +27,15 @@ export function useAuth() {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSupabaseReady, setIsSupabaseReady] = useState(isSupabaseConfigured());
 
   useEffect(() => {
+    // If Supabase is not properly configured, don't attempt to fetch the session
+    if (!isSupabaseReady) {
+      setIsLoading(false);
+      return;
+    }
+    
     // Check if there's an active session
     const getSession = async () => {
       setIsLoading(true);
@@ -62,33 +70,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     getSession();
     
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (userError) {
-            console.error('Error fetching user data:', userError);
-          } else if (userData) {
-            setCurrentUser(userData as User);
+    // Only set up auth subscription if Supabase is configured
+    if (isSupabaseReady) {
+      // Subscribe to auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_IN' && session) {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (userError) {
+              console.error('Error fetching user data:', userError);
+            } else if (userData) {
+              setCurrentUser(userData as User);
+            }
+          } else if (event === 'SIGNED_OUT') {
+            setCurrentUser(null);
           }
-        } else if (event === 'SIGNED_OUT') {
-          setCurrentUser(null);
         }
-      }
-    );
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+      );
+      
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [isSupabaseReady]);
 
   const login = async (email: string, password: string) => {
+    if (!isSupabaseReady) {
+      toast.error("La configuration Supabase est incomplète. Connexion indisponible.");
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -125,6 +141,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    if (!isSupabaseReady) {
+      setCurrentUser(null);
+      toast.info("Vous êtes déconnecté");
+      return;
+    }
+    
     try {
       await supabase.auth.signOut();
       setCurrentUser(null);
@@ -142,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     isAuthenticated: !!currentUser,
     role: currentUser?.role as Role | null,
+    isSupabaseReady,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
