@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
 
-// Get environment variables with fallbacks to prevent crashes during development
+// Get environment variables with more robust fallbacks
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-url.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
@@ -17,10 +17,10 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Create the Supabase client
+// Create the Supabase client with fallback values to prevent crashes
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Helper to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
-  return import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 };
